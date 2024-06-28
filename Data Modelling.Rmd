@@ -1,0 +1,96 @@
+---
+title: "Data Modelling"
+author: "K. E"
+date: "2024-06-19"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(readxl)
+```
+
+```{r}
+sales <- read_excel(file.choose())
+region <- read_excel(file.choose())
+products <- read_excel(file.choose())
+calender <- read_excel(file.choose())
+customers <- read_excel(file.choose())
+```
+
+```{r}
+#show columns in each variable using view
+View(head(sales))
+View(head(region))
+View(head(products))
+View(head(calender))
+View(head(customers))
+```
+
+```{r}
+#joining the sales and products table using the foreign key
+sales_prod <- inner_join(x=sales, y=products,by="prodkey")
+View(sales_prod)
+```
+
+```{r}
+#joining sales and customer table
+sales_cust <- inner_join(x=sales, y=customers, by= "custkey")
+```
+
+```{r}
+#joining sales and region table
+sales_reg <- inner_join(x=sales, y=region, by= "regionkey")
+```
+
+```{r}
+#joining sales and calender
+sales_cal <- inner_join(x=sales, y=calender, by= "datekey")
+```
+
+```{r}
+#total sales by category
+sales_prod %>% 
+  group_by(category) %>%
+  summarize(total =format(x= sum(revenue), big.mark=",", scientific= F))
+
+```
+
+```{r}
+#total sales in each year
+sales_cal %>% 
+  group_by(year) %>% 
+  summarize(total =sum(revenue)) %>% 
+  arrange(-total) %>% 
+  ggplot(aes(x=year,y=total)) + geom_col() + scale_y_continuous(labels = scales::comma)
+```
+
+```{r}
+#top 5 customers for adventure work
+sales_cust %>% 
+  group_by(customer) %>% 
+  summarize(total =sum(revenue)) %>% 
+  arrange(desc(total)) %>% 
+  head(5)
+
+```
+
+```{r}
+#total sales by year
+
+sales_cal %>% 
+  group_by(year) %>% 
+  summarize(total =sum(revenue)) %>% 
+  arrange(-total) %>% 
+  ggplot(aes(x=year,y=total, group= 1)) + geom_line(aes(y = total),color = "red",size = 0.7) + geom_text(aes(x = year, y = total,label = total), vjust = "inward", size = 3) + scale_y_continuous(labels = scales::comma)
+```
+```{r}
+sales_cal %>% 
+  filter(year==2019) %>% 
+  group_by(month) %>% 
+  summarize(total =sum(revenue)) %>% 
+  arrange(-total) %>% 
+  ggplot(aes(x=month,y=total, group= 1)) + geom_line(aes(y = total),color = "red",size = 0.7) + geom_text(aes(x = month, y = total,label = total), vjust = "inward", size = 3) + scale_y_continuous(labels = scales::comma)
+```
+
+
